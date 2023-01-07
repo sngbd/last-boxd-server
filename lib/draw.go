@@ -58,7 +58,7 @@ func DrawText(film Film, imageBase64 string) string {
 
 	// Draw the text
 	col := color.RGBA{255, 255, 255, 255}
-	point := fixed.Point26_6{fixed.Int26_6(10 * 64), fixed.Int26_6(20 * 64)}
+	point := fixed.Point26_6{X: fixed.Int26_6(10 * 64), Y: fixed.Int26_6(20 * 64)}
 	d := &font.Drawer{
 		Dst:  rgba,
 		Src:  image.NewUniform(col),
@@ -66,7 +66,7 @@ func DrawText(film Film, imageBase64 string) string {
 		Dot:  point,
 	}
 	d.DrawString(film.Title + " (" + film.Year + ")")
-	point = fixed.Point26_6{fixed.Int26_6(10 * 64), fixed.Int26_6(40 * 64)}
+	point = fixed.Point26_6{X: fixed.Int26_6(10 * 64), Y: fixed.Int26_6(40 * 64)}
 	d = &font.Drawer{
 		Dst:  rgba,
 		Src:  image.NewUniform(col),
