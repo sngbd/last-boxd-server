@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -21,13 +21,11 @@ func downloadFile(URL string) string {
 	}
 	defer response.Body.Close()
 
-	// Read the image data from the response body
-	imageData, err := ioutil.ReadAll(response.Body)
+	imageData, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Encode the image data as base64
 	imageBase64 := base64.StdEncoding.EncodeToString(imageData)
 	return imageBase64
 }

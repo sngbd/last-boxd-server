@@ -7,8 +7,8 @@ import (
 	"image/color"
 	"image/draw"
 	"image/jpeg"
-	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -24,7 +24,6 @@ type Film struct {
 }
 
 func DrawText(film Film, imageBase64 string) string {
-	// Decode the image
 	imageByte, err := base64.StdEncoding.DecodeString(imageBase64)
 	if err != nil {
 		log.Fatal(err)
@@ -35,12 +34,10 @@ func DrawText(film Film, imageBase64 string) string {
 		log.Fatal(err)
 	}
 
-	// Create a new RGBA image
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	// Load the font
-	fontBytes, err := ioutil.ReadFile("./Inconsolata.TTF")
+	fontBytes, err := os.ReadFile("Inconsolata.TTF")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,14 +46,12 @@ func DrawText(film Film, imageBase64 string) string {
 		log.Fatal(err)
 	}
 
-	// Create a font face
 	face := truetype.NewFace(fnt, &truetype.Options{
-		Size:    28, // font size in points
-		DPI:     72, // screen resolution in DPI
+		Size:    28,
+		DPI:     72,
 		Hinting: font.HintingFull,
 	})
 
-	// Draw the text
 	col := color.RGBA{255, 255, 255, 255}
 	point := fixed.Point26_6{X: fixed.Int26_6(10 * 64), Y: fixed.Int26_6(20 * 64)}
 	d := &font.Drawer{
@@ -76,12 +71,10 @@ func DrawText(film Film, imageBase64 string) string {
 	d.DrawString(film.Director)
 
 	var buf bytes.Buffer
-	err = jpeg.Encode(&buf, img, nil)
+	err = jpeg.Encode(&buf, rgba, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	imageBase64 = base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	return imageBase64
+	return base64.StdEncoding.EncodeToString(buf.Bytes())
 }

@@ -13,11 +13,6 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 
 	imageBase64 := GetLastBoxd(username)
 
-	// Set the content type to JPEG
-	// w.Header().Set("Content-Type", "image/jpeg")
-
-	// Copy the image data to the response
-	// io.Copy(w, f)
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprintf(w, `<img src="data:image/jpeg;base64,%s">`, imageBase64)
 }
