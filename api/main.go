@@ -2,46 +2,39 @@ package api
 
 import (
 	"context"
-	"errors"
-	"io"
+	"encoding/base64"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
-	"github.com/sngbd/last-boxd/lib"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly"
+	"github.com/sngbd/last-boxd/lib"
 )
 
-func downloadFile(URL, fileName string) error {
+func downloadFile(URL string) string {
 	response, err := http.Get(URL)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != 200 {
-		return errors.New("received non 200 response code")
-	}
-	file, err := os.Create(fileName)
+	// Read the image data from the response body
+	imageData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	return nil
+	// Encode the image data as base64
+	imageBase64 := base64.StdEncoding.EncodeToString(imageData)
+	return imageBase64
 }
 
-func GetLastBoxd(username string) {
+func GetLastBoxd(username string) string {
 	var grid int = 3
+	filmImages := []string{}
 	films := []*lib.Film{}
 	c := colly.NewCollector(
 		colly.AllowedDomains("letterboxd.com"),
@@ -82,14 +75,10 @@ func GetLastBoxd(username string) {
 		film.Director = director
 	}
 
-	for i, film := range films {
-		fileName := strconv.Itoa(i) + ".jpg"
-		err := downloadFile(film.Image, fileName)
-		if err != nil {
-			log.Fatal(err)
-		}
-		lib.DrawText(fileName, *film)
+	for _, film := range films {
+		imageBase64 := lib.DrawText(*film, downloadFile(film.Image))
+		filmImages = append(filmImages, imageBase64)
 	}
 
-	lib.MakeGrid()
+	return lib.MakeGrid(filmImages)
 }

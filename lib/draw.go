@@ -1,13 +1,14 @@
 package lib
 
 import (
+	"bytes"
+	"encoding/base64"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/jpeg"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -22,16 +23,14 @@ type Film struct {
 	Image    string
 }
 
-func DrawText(filename string, film Film) {
-	// Open an image file
-	f, err := os.Open(filename)
+func DrawText(film Film, imageBase64 string) string {
+	// Decode the image
+	imageByte, err := base64.StdEncoding.DecodeString(imageBase64)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
-	// Decode the image
-	img, err := jpeg.Decode(f)
+	img, _, err := image.Decode(bytes.NewReader(imageByte))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,12 +75,13 @@ func DrawText(filename string, film Film) {
 	}
 	d.DrawString(film.Director)
 
-	// Save the image to a file
-	out, err := os.Create(filename)
+	var buf bytes.Buffer
+	err = jpeg.Encode(&buf, img, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer out.Close()
-	jpeg.Encode(out, rgba, nil)
 
+	imageBase64 = base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	return imageBase64
 }

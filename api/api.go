@@ -1,9 +1,8 @@
 package api
 
 import (
-	"io"
+	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -12,19 +11,13 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 
-	GetLastBoxd(username)
-
-	// Open the image file
-	f, err := os.Open("grid.jpg")
-	if err != nil {
-		http.Error(w, "file not found", 404)
-		return
-	}
-	defer f.Close()
+	imageBase64 := GetLastBoxd(username)
 
 	// Set the content type to JPEG
-	w.Header().Set("Content-Type", "image/jpeg")
+	// w.Header().Set("Content-Type", "image/jpeg")
 
 	// Copy the image data to the response
-	io.Copy(w, f)
+	// io.Copy(w, f)
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprintf(w, `<img src="data:image/jpeg;base64,%s">`, imageBase64)
 }
