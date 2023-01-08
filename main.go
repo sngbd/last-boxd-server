@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/sngbd/last-boxd/api"
@@ -22,6 +23,6 @@ func main() {
 
 	err := http.ListenAndServe(":"+port, router)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 }

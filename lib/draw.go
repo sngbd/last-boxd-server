@@ -23,6 +23,26 @@ type Film struct {
 	Image    string
 }
 
+func insertText(img *image.RGBA, text string, x, y int, face font.Face, c color.Color) {
+	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(c),
+		Face: face,
+		Dot:  point,
+	}
+	d.DrawString(text)
+}
+
+func drawOutlinedText(img *image.RGBA, text string, x, y int, face font.Face, c, outline color.Color) {
+	insertText(img, text, x-1, y, face, outline)
+	insertText(img, text, x+1, y, face, outline)
+	insertText(img, text, x, y-1, face, outline)
+	insertText(img, text, x, y+1, face, outline)
+	insertText(img, text, x, y, face, c)
+}
+
 func DrawText(film Film, imageBase64 string) string {
 	imageByte, err := base64.StdEncoding.DecodeString(imageBase64)
 	if err != nil {
@@ -37,7 +57,7 @@ func DrawText(film Film, imageBase64 string) string {
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	fontBytes, err := os.ReadFile("Inconsolata.TTF")
+	fontBytes, err := os.ReadFile("font/Inconsolata.ttf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,23 +72,10 @@ func DrawText(film Film, imageBase64 string) string {
 		Hinting: font.HintingFull,
 	})
 
-	col := color.RGBA{255, 255, 255, 255}
-	point := fixed.Point26_6{X: fixed.Int26_6(10 * 64), Y: fixed.Int26_6(20 * 64)}
-	d := &font.Drawer{
-		Dst:  rgba,
-		Src:  image.NewUniform(col),
-		Face: face,
-		Dot:  point,
-	}
-	d.DrawString(film.Title + " (" + film.Year + ")")
-	point = fixed.Point26_6{X: fixed.Int26_6(10 * 64), Y: fixed.Int26_6(40 * 64)}
-	d = &font.Drawer{
-		Dst:  rgba,
-		Src:  image.NewUniform(col),
-		Face: face,
-		Dot:  point,
-	}
-	d.DrawString(film.Director)
+	white := color.RGBA{255, 255, 255, 255}
+	black := color.RGBA{0, 0, 0, 255}
+	drawOutlinedText(rgba, film.Title + " (" + film.Year + ")", 10, 20, face, white, black)
+	drawOutlinedText(rgba, film.Director, 10, 40, face, white, black)
 
 	var buf bytes.Buffer
 	err = jpeg.Encode(&buf, rgba, nil)
