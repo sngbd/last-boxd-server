@@ -9,8 +9,8 @@ import (
 	"log"
 )
 
-func MakeGrid(filmImages []string) string {
-	img := image.NewRGBA(image.Rect(0, 0, 1500, 2250))
+func MakeGrid(filmImages []string, grid int) string {
+	img := image.NewRGBA(image.Rect(0, 0, grid*500, grid*750))
 
 	var images []image.Image
 
@@ -31,11 +31,17 @@ func MakeGrid(filmImages []string) string {
 	y0 := 0
 	y1 := 750
 	index := 0
-	for i := 0; i < 3; i++ {
+
+merge:
+	for i := 0; i < grid; i++ {
 		x0 := 0
 		x1 := 500
-		for j := 0; j < 3; j++ {
-			draw.Draw(img, image.Rect(x0, y0, x1, y1), images[index], image.Point{0, 0}, draw.Src)
+		for j := 0; j < grid; j++ {
+			if len(images) == 0 {
+				break merge
+			}
+			draw.Draw(img, image.Rect(x0, y0, x1, y1), images[0], image.Point{0, 0}, draw.Src)
+			images = images[1:]
 			x0 += 500
 			x1 += 500
 			index += 1

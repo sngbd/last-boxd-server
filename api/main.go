@@ -78,5 +78,5 @@ func GetLastBoxd(username string) string {
 		filmImages = append(filmImages, imageBase64)
 	}
 
-	return lib.MakeGrid(filmImages)
+	return lib.MakeGrid(filmImages, grid)
 }
