@@ -15,14 +15,6 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-type Film struct {
-	Title    string
-	Year     string
-	Director string
-	Link     string
-	Image    string
-}
-
 func insertText(img *image.RGBA, text string, x, y int, face font.Face, c color.Color) {
 	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
 
@@ -75,7 +67,7 @@ func DrawText(film Film, imageBase64 string) string {
 	white := color.RGBA{255, 255, 255, 255}
 	black := color.RGBA{0, 0, 0, 255}
 	drawOutlinedText(rgba, film.Title + " (" + film.Year + ")", 10, 20, face, white, black)
-	drawOutlinedText(rgba, film.Director, 10, 40, face, white, black)
+	drawOutlinedText(rgba, film.Director, 10, 45, face, white, black)
 
 	var buf bytes.Buffer
 	err = jpeg.Encode(&buf, rgba, nil)

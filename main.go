@@ -19,6 +19,7 @@ func main() {
 
 	router := mux.NewRouter()
 
+	router.HandleFunc("/{username}/{grid}", api.LastBoxd).Methods("GET")
 	router.HandleFunc("/{username}", api.LastBoxd).Methods("GET")
 
 	err := http.ListenAndServe(":"+port, router)

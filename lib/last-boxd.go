@@ -1,4 +1,4 @@
-package api
+package lib
 
 import (
 	"context"
@@ -11,8 +11,15 @@ import (
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly"
-	"github.com/sngbd/last-boxd/lib"
 )
+
+type Film struct {
+	Title    string
+	Year     string
+	Director string
+	Link     string
+	Image    string
+}
 
 func downloadFile(URL string) string {
 	response, err := http.Get(URL)
@@ -30,10 +37,9 @@ func downloadFile(URL string) string {
 	return imageBase64
 }
 
-func GetLastBoxd(username string) string {
-	var grid int = 3
+func GetLastBoxd(username string, grid int) string {
 	filmImages := []string{}
-	films := []*lib.Film{}
+	films := []*Film{}
 	c := colly.NewCollector(
 		colly.AllowedDomains("letterboxd.com"),
 	)
@@ -41,7 +47,7 @@ func GetLastBoxd(username string) string {
 		e.ForEachWithBreak("td.td-film-details", func(i int, el *colly.HTMLElement) bool {
 			title := el.ChildText("h3.headline-3.prettify")
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("a", "href"), "/")[2:4], "/")
-			films = append(films, &lib.Film{Title: title, Link: link})
+			films = append(films, &Film{Title: title, Link: link})
 			return !(i+1 == grid*grid)
 		})
 	})
@@ -74,9 +80,9 @@ func GetLastBoxd(username string) string {
 	}
 
 	for _, film := range films {
-		imageBase64 := lib.DrawText(*film, downloadFile(film.Image))
+		imageBase64 := DrawText(*film, downloadFile(film.Image))
 		filmImages = append(filmImages, imageBase64)
 	}
 
-	return lib.MakeGrid(filmImages, grid)
+	return MakeGrid(filmImages, grid)
 }
