@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -27,19 +28,24 @@ type TMDB struct {
 }
 
 func downloadFile(URL string) string {
+	var imageData []byte
 	if URL == "https://image.tmdb.org/t/p/w500" {
-		return ""
-	}
+		var err error
+		imageData, err = os.ReadFile("img/blank.jpg")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		response, err := http.Get(URL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer response.Body.Close()
 
-	response, err := http.Get(URL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer response.Body.Close()
-
-	imageData, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
+		imageData, err = io.ReadAll(response.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	imageBase64 := base64.StdEncoding.EncodeToString(imageData)
