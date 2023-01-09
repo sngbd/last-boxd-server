@@ -19,12 +19,12 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	var grid int = 3
-	var text string = "on"
+	var details string = "on"
 	var err error
 
 	username := vars["username"]
 	qGrid := q.Get("grid")
-	text = q.Get("text")
+	details = q.Get("details")
 
 	if qGrid != "" {
 		grid, err = strconv.Atoi(qGrid)
@@ -33,7 +33,7 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	imageBase64 := lib.GetLastBoxd(username, grid, text)
+	imageBase64 := lib.GetLastBoxd(username, grid, details)
 
 	data := Response{ImageBase64: imageBase64}
 

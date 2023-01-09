@@ -8,6 +8,7 @@ import (
 	"github.com/sngbd/last-boxd/api"
 	"github.com/spf13/viper"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -21,7 +22,9 @@ func main() {
 
 	router.HandleFunc("/{username}", api.LastBoxd).Methods("GET")
 
-	err := http.ListenAndServe(":"+port, router)
+	handler := handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(router)
+
+	err := http.ListenAndServe(":"+port, handler)
 	if err != nil {
 		log.Fatal(err)
 	}

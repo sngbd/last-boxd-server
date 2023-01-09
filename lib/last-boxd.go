@@ -38,7 +38,7 @@ func downloadFile(URL string) string {
 	return imageBase64
 }
 
-func GetLastBoxd(username string, grid int, text string) string {
+func GetLastBoxd(username string, grid int, details string) string {
 	filmImages := []string{}
 	films := []*Film{}
 	c := colly.NewCollector(
@@ -83,7 +83,7 @@ func GetLastBoxd(username string, grid int, text string) string {
 
 	for _, film := range films {
 		imageBase64 := downloadFile(film.Image)
-		if text != "off"{
+		if details != "off"{
 			imageBase64 = DrawText(*film, imageBase64)
 		}
 		filmImages = append(filmImages, imageBase64)

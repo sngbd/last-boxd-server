@@ -7,6 +7,7 @@ require (
 	github.com/chromedp/chromedp v0.8.6
 	github.com/gocolly/colly v1.2.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/spf13/viper v1.14.0
 	golang.org/x/image v0.3.0
@@ -19,6 +20,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.13 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
