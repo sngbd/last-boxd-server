@@ -27,6 +27,10 @@ type TMDB struct {
 }
 
 func downloadFile(URL string) string {
+	if URL == "https://image.tmdb.org/t/p/w500" {
+		return ""
+	}
+
 	response, err := http.Get(URL)
 	if err != nil {
 		log.Fatal(err)
@@ -67,15 +71,16 @@ func GetLastBoxd(username string, grid int, details string) string {
 	c.OnHTML(".text-link.text-footer", func(e *colly.HTMLElement) {
 		siteLinks := e.ChildAttrs("a", "href")
 		var tmdbURLSplit []string
-		if len(siteLinks) < 2 {
+		if len(siteLinks) > 2 {
 			tmdbURLSplit = strings.Split(siteLinks[1], "/")
 		} else {
 			tmdbURLSplit = strings.Split(siteLinks[0], "/")
 		}
-		tmdbMovieID := tmdbURLSplit[len(tmdbURLSplit)-2]
+		tmdbID := tmdbURLSplit[len(tmdbURLSplit)-2]
+		tmdbType := tmdbURLSplit[len(tmdbURLSplit)-3]
 
 		apiKey := fmt.Sprint(viper.Get("API_KEY"))
-		resp, err := http.Get("https://api.themoviedb.org/3/movie/" + tmdbMovieID + "?api_key=" + apiKey)
+		resp, err := http.Get("https://api.themoviedb.org/3/" + tmdbType + "/" + tmdbID + "?api_key=" + apiKey)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,6 +107,9 @@ func GetLastBoxd(username string, grid int, details string) string {
 
 	for _, film := range films {
 		imageBase64 := downloadFile(film.Image)
+		if imageBase64 == "" {
+			continue
+		}
 		if details != "off" {
 			imageBase64 = DrawText(*film, imageBase64)
 		}
