@@ -65,7 +65,13 @@ func GetLastBoxd(username string, grid int, details string) string {
 	var image, year, director string
 
 	c.OnHTML(".text-link.text-footer", func(e *colly.HTMLElement) {
-		tmdbURLSplit := strings.Split(e.ChildAttrs("a", "href")[1], "/")
+		siteLinks := e.ChildAttrs("a", "href")
+		var tmdbURLSplit []string
+		if len(siteLinks) < 2 {
+			tmdbURLSplit = strings.Split(siteLinks[1], "/")
+		} else {
+			tmdbURLSplit = strings.Split(siteLinks[0], "/")
+		}
 		tmdbMovieID := tmdbURLSplit[len(tmdbURLSplit)-2]
 
 		apiKey := fmt.Sprint(viper.Get("API_KEY"))
