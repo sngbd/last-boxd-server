@@ -1,16 +1,16 @@
 package lib
 
 import (
-	"context"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/chromedp/cdproto/emulation"
-	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly"
+	"github.com/spf13/viper"
 )
 
 type Film struct {
@@ -20,6 +20,10 @@ type Film struct {
 	Link     string
 	Image    string
 	Rating   string
+}
+
+type TMDB struct {
+	Poster string `json:"poster_path"`
 }
 
 func downloadFile(URL string) string {
@@ -41,9 +45,12 @@ func downloadFile(URL string) string {
 func GetLastBoxd(username string, grid int, details string) string {
 	filmImages := []string{}
 	films := []*Film{}
+
 	c := colly.NewCollector(
 		colly.AllowedDomains("letterboxd.com"),
+		colly.Async(false),
 	)
+
 	c.OnHTML(".table.film-table", func(e *colly.HTMLElement) {
 		e.ForEachWithBreak("tr.diary-entry-row", func(i int, el *colly.HTMLElement) bool {
 			title := el.ChildText("h3.headline-3.prettify")
@@ -55,27 +62,33 @@ func GetLastBoxd(username string, grid int, details string) string {
 	})
 	c.Visit("https://letterboxd.com/" + username + "/films/diary/")
 
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
-		chromedp.WithLogf(log.Printf),
-	)
-	defer cancel()
+	var image, year, director string
 
-	var image string
-	var year string
-	var director string
-	for _, film := range films {
-		err := chromedp.Run(ctx,
-			emulation.SetUserAgentOverride("WebScraper 1.0"),
-			chromedp.Navigate(film.Link),
-			chromedp.WaitVisible(`#poster-zoom`),
-			chromedp.Evaluate(`(function() {return document.querySelector("img").getAttribute("src");})();`, &image),
-			chromedp.Evaluate(`(function() {return document.querySelector("small.number").innerText;})();`, &year),
-			chromedp.Evaluate(`(function() {return document.querySelector("span.prettify").innerText;})();`, &director),
-		)
+	c.OnHTML(".text-link.text-footer", func(e *colly.HTMLElement) {
+		tmdbURLSplit := strings.Split(e.ChildAttrs("a", "href")[1], "/")
+		tmdbMovieID := tmdbURLSplit[len(tmdbURLSplit)-2]
+
+		apiKey := fmt.Sprint(viper.Get("API_KEY"))
+		resp, err := http.Get("https://api.themoviedb.org/3/movie/" + tmdbMovieID + "?api_key=" + apiKey)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer resp.Body.Close()
+
+		var tmdb TMDB
+		if err := json.NewDecoder(resp.Body).Decode(&tmdb); err != nil {
+			log.Fatal(err)
+		}
+		image = "https://image.tmdb.org/t/p/w500" + tmdb.Poster
+	})
+
+	c.OnHTML("#featured-film-header", func(e *colly.HTMLElement) {
+		year = e.ChildText("small.number")
+		director = e.ChildText("span.prettify")
+	})
+
+	for _, film := range films {
+		c.Visit(film.Link)
 		film.Image = image
 		film.Year = year
 		film.Director = director
@@ -83,7 +96,7 @@ func GetLastBoxd(username string, grid int, details string) string {
 
 	for _, film := range films {
 		imageBase64 := downloadFile(film.Image)
-		if details != "off"{
+		if details != "off" {
 			imageBase64 = DrawText(*film, imageBase64)
 		}
 		filmImages = append(filmImages, imageBase64)
