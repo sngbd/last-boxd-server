@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sngbd/last-boxd/lib"
 )
+
+type Response struct {
+	ImageBase64 string `json:"image"`
+}
 
 func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -31,6 +35,15 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 
 	imageBase64 := lib.GetLastBoxd(username, grid, text)
 
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, `<img src="data:image/jpeg;base64,%s">`, imageBase64)
+	data := Response{ImageBase64: imageBase64}
+
+	json, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(json)
 }
