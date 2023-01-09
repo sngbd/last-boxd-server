@@ -49,7 +49,7 @@ func DrawText(film Film, imageBase64 string) string {
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
-	fontBytes, err := os.ReadFile("font/Inconsolata.ttf")
+	fontBytes, err := os.ReadFile("font/FreeSerif.ttf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,8 +66,9 @@ func DrawText(film Film, imageBase64 string) string {
 
 	white := color.RGBA{255, 255, 255, 255}
 	black := color.RGBA{0, 0, 0, 255}
-	drawOutlinedText(rgba, film.Title + " (" + film.Year + ")", 10, 20, face, white, black)
-	drawOutlinedText(rgba, film.Director, 10, 45, face, white, black)
+	drawOutlinedText(rgba, film.Title + " (" + film.Year + ")", 8, 25, face, white, black)
+	drawOutlinedText(rgba, film.Director, 8, 50, face, white, black)
+	drawOutlinedText(rgba, film.Rating, 8, 75, face, white, black)
 
 	var buf bytes.Buffer
 	err = jpeg.Encode(&buf, rgba, nil)

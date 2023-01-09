@@ -12,8 +12,10 @@ import (
 
 func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	q := r.URL.Query()
+
 	username := vars["username"]
-	varGrid := vars["grid"]
+	varGrid := q.Get("grid")
 
 	var grid int = 3
 	var err error

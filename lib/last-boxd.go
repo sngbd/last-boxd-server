@@ -19,6 +19,7 @@ type Film struct {
 	Director string
 	Link     string
 	Image    string
+	Rating   string
 }
 
 func downloadFile(URL string) string {
@@ -44,10 +45,11 @@ func GetLastBoxd(username string, grid int) string {
 		colly.AllowedDomains("letterboxd.com"),
 	)
 	c.OnHTML(".table.film-table", func(e *colly.HTMLElement) {
-		e.ForEachWithBreak("td.td-film-details", func(i int, el *colly.HTMLElement) bool {
+		e.ForEachWithBreak("tr.diary-entry-row", func(i int, el *colly.HTMLElement) bool {
 			title := el.ChildText("h3.headline-3.prettify")
-			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("a", "href"), "/")[2:4], "/")
-			films = append(films, &Film{Title: title, Link: link})
+			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
+			rating := el.ChildText("span.rating")
+			films = append(films, &Film{Title: title, Link: link, Rating: rating})
 			return !(i+1 == grid*grid)
 		})
 	})
