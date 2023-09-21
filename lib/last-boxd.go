@@ -52,7 +52,7 @@ func downloadFile(URL string) string {
 	return imageBase64
 }
 
-func GetLastBoxd(username string, grid int, details string) string {
+func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating string) string {
 	filmImages := []string{}
 	films := []*Film{}
 
@@ -67,12 +67,13 @@ func GetLastBoxd(username string, grid int, details string) string {
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
 			films = append(films, &Film{Title: title, Link: link, Rating: rating})
-			return !(i+1 == grid*grid)
+			return !(i+1 == col*row)
 		})
 	})
 	c.Visit("https://letterboxd.com/" + username + "/films/diary/")
 
 	var image, year, director string
+	var directors []string
 
 	c.OnHTML(".text-link.text-footer", func(e *colly.HTMLElement) {
 		siteLinks := e.ChildAttrs("a", "href")
@@ -101,7 +102,21 @@ func GetLastBoxd(username string, grid int, details string) string {
 
 	c.OnHTML("#featured-film-header", func(e *colly.HTMLElement) {
 		year = e.ChildText("small.number")
-		director = e.ChildText("span.prettify")
+		e.ForEach("span.prettify", func(_ int, elem *colly.HTMLElement) {
+			dir := elem.Text
+			directors = append(directors, dir)
+		})
+		if (len(directors) > 1) {
+			for i, dir := range directors {
+				if (i == len(directors) - 1) {
+					director += dir
+				} else {
+					director += dir + ", "
+				}
+			}
+		} else {
+			director = directors[0]
+		}
 	})
 
 	for _, film := range films {
@@ -109,6 +124,8 @@ func GetLastBoxd(username string, grid int, details string) string {
 		film.Image = image
 		film.Year = year
 		film.Director = director
+		directors = nil
+		director = ""
 	}
 
 	for _, film := range films {
@@ -116,11 +133,9 @@ func GetLastBoxd(username string, grid int, details string) string {
 		if imageBase64 == "" {
 			continue
 		}
-		if details != "off" {
-			imageBase64 = DrawText(*film, imageBase64)
-		}
+		imageBase64 = DrawText(*film, imageBase64, qTitle, qDirector, qRating)
 		filmImages = append(filmImages, imageBase64)
 	}
 
-	return MakeGrid(filmImages, grid)
+	return MakeGrid(filmImages, col, row)
 }

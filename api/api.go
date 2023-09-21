@@ -18,22 +18,35 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	q := r.URL.Query()
 
-	var grid int = 3
-	var details string = "on"
+	var col int = 3
+	var row int = 3
+	var qTitle string = "on"
+	var qDirector string = "on"
+	var qRating string = "on"
 	var err error
 
 	username := vars["username"]
-	qGrid := q.Get("grid")
-	details = q.Get("details")
+	qCol := q.Get("col")
+	qRow := q.Get("row")
+	qTitle = q.Get("title")
+	qDirector = q.Get("director")
+	qRating = q.Get("rating")
 
-	if qGrid != "" {
-		grid, err = strconv.Atoi(qGrid)
+	if qCol != "" {
+		col, err = strconv.Atoi(qCol)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	imageBase64 := lib.GetLastBoxd(username, grid, details)
+	if qRow != "" {
+		row, err = strconv.Atoi(qRow)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	imageBase64 := lib.GetLastBoxd(username, col, row, qTitle, qDirector, qRating)
 
 	data := Response{ImageBase64: imageBase64}
 
