@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/sngbd/last-boxd/lib"
+	"github.com/sngbd/last-boxd-server/lib"
 )
 
 type Response struct {

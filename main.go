@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/sngbd/last-boxd/api"
+	"github.com/sngbd/last-boxd-server/api"
 	"github.com/spf13/viper"
 
 	"github.com/gorilla/handlers"
