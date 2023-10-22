@@ -21,6 +21,7 @@ type Film struct {
 	Link     string
 	Image    string
 	Rating   string
+	Rewatch   bool
 }
 
 type TMDB struct {
@@ -66,7 +67,12 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 			title := el.ChildText("h3.headline-3.prettify")
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
-			films = append(films, &Film{Title: title, Link: link, Rating: rating})
+			rewatch := false
+			classes := strings.Split(el.ChildAttr(".td-rewatch", "class"), " ");
+			if (len(classes) == 2) {
+				rewatch = true
+			}
+			films = append(films, &Film{Title: title, Link: link, Rating: rating, Rewatch: rewatch})
 			return !(i+1 == col*row)
 		})
 	})

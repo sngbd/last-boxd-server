@@ -143,6 +143,10 @@ func DrawText(film Film, imageBase64, qTitle, qDirector, qRating string) string 
 
 	white = color.RGBA{255, 255, 255, 255}
 
+	if (film.Rewatch) {
+		film.Rating += " ↻"
+	}
+
 	if qTitle == "on" && qDirector == "on" && qRating == "on" {
 		drawTextTriple(film.Title+" ("+film.Year+")", film.Director, film.Rating)
 	} else if qTitle == "on" && qDirector == "on" {
