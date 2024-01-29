@@ -90,7 +90,7 @@ func drawTextTriple(title, director, rating string) {
 	}
 	if (!liked && rewatched) {
 		insertUc(rgba, "↻", 7+ratingWidth+5, 24+2*(textHeight/3), face, white)
-	} else {
+	} else if (rewatched) {
 		insertUc(rgba, "↻", 7+ratingWidth+5+20, 24+2*(textHeight/3), face, white)
 	}
 }
