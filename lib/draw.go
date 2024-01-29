@@ -18,10 +18,13 @@ import (
 var fontBytes []byte
 var fnt *truetype.Font
 var face font.Face
+var uc font.Face
 var dc *font.Drawer
 var rgba *image.RGBA
 var white color.RGBA
 var img image.Image
+var rewatched bool
+var liked bool
 
 func createOverlay(width, height int, colorRGBA color.RGBA) image.Image {
 	overlay := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -42,6 +45,19 @@ func insertText(img *image.RGBA, text string, x, y int, face font.Face, c color.
 	}
 	d.DrawString(text)
 }
+
+func insertUc(img *image.RGBA, text string, x, y int, face font.Face, c color.Color) {
+	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(c),
+		Face: uc,
+		Dot:  point,
+	}
+	d.DrawString(text)
+}
+
 
 func drawTextTriple(title, director, rating string) {
 	titleWidth := dc.MeasureString(title).Ceil()
@@ -69,6 +85,12 @@ func drawTextTriple(title, director, rating string) {
 	insertText(rgba, title, 7, 24, face, white)
 	insertText(rgba, director, 7, 24+textHeight/3, face, white)
 	insertText(rgba, rating, 7, 24+2*(textHeight/3), face, white)
+	if (liked) {
+		insertUc(rgba, "♥", 7+ratingWidth+5, 24+2*(textHeight/3), face, white)
+	}
+	if (rewatched) {
+		insertUc(rgba, "↻", 7+ratingWidth+5+20, 24+2*(textHeight/3), face, white)
+	}
 }
 
 func drawTextDouble(text1, text2 string) {
@@ -135,6 +157,12 @@ func DrawText(film Film, imageBase64, qTitle, qDirector, qRating string) string 
 		Hinting: font.HintingFull,
 	})
 
+	uc = truetype.NewFace(fnt, &truetype.Options{
+		Size:    22,
+		DPI:     72,
+		Hinting: font.HintingFull,
+	})
+
 	dc = &font.Drawer{
 		Face: face,
 	}
@@ -144,7 +172,15 @@ func DrawText(film Film, imageBase64, qTitle, qDirector, qRating string) string 
 	white = color.RGBA{255, 255, 255, 255}
 
 	if (film.Rewatch) {
-		film.Rating += " ↻"
+		rewatched = true
+	} else {
+		rewatched = false
+	}
+
+	if (film.Like) {
+		liked = true
+	} else {
+		liked = false
 	}
 
 	if qTitle == "on" && qDirector == "on" && qRating == "on" {

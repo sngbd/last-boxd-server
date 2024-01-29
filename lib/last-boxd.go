@@ -21,7 +21,8 @@ type Film struct {
 	Link     string
 	Image    string
 	Rating   string
-	Rewatch   bool
+	Rewatch  bool
+	Like     bool
 }
 
 type TMDB struct {
@@ -68,14 +69,23 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
 			rewatch := false
-			classes := strings.Split(el.ChildAttr(".td-rewatch", "class"), " ");
-			if (len(classes) == 2) {
+			like := false
+
+			rewatchClasses := strings.Split(el.ChildAttr(".td-rewatch", "class"), " ")
+			if len(rewatchClasses) == 2 {
 				rewatch = true
 			}
-			films = append(films, &Film{Title: title, Link: link, Rating: rating, Rewatch: rewatch})
+
+			likeChilds := el.DOM.Find(".td-like").Children().Length()
+			if likeChilds == 2 {
+				like = true
+			}
+
+			films = append(films, &Film{Title: title, Link: link, Rating: rating, Rewatch: rewatch, Like: like})
 			return !(i+1 == col*row)
 		})
 	})
+
 	c.Visit("https://letterboxd.com/" + username + "/films/diary/")
 
 	var image, year, director string
@@ -112,9 +122,9 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 			dir := elem.Text
 			directors = append(directors, dir)
 		})
-		if (len(directors) > 1) {
+		if len(directors) > 1 {
 			for i, dir := range directors {
-				if (i == len(directors) - 1) {
+				if i == len(directors)-1 {
 					director += dir
 				} else {
 					director += dir + ", "
