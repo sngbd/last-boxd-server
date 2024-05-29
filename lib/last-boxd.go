@@ -116,8 +116,8 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 		image = "https://image.tmdb.org/t/p/w500" + tmdb.Poster
 	})
 
-	c.OnHTML("#featured-film-header", func(e *colly.HTMLElement) {
-		year = e.ChildText("small.number")
+	c.OnHTML("div.metablock", func(e *colly.HTMLElement) {
+		year = e.ChildText("div.releaseyear > a")
 		e.ForEach("span.prettify", func(_ int, elem *colly.HTMLElement) {
 			dir := elem.Text
 			directors = append(directors, dir)
