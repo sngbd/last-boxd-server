@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/gocolly/colly"
 	"github.com/spf13/viper"
@@ -55,8 +57,16 @@ func downloadFile(URL string) string {
 }
 
 func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating string) string {
-	filmImages := []string{}
-	films := []*Film{}
+	var (
+		filmImages            []string = []string{}
+		films                 []*Film  = []*Film{}
+		image, year, director string
+		directors             []string
+		entryCount            int
+		page                  int = int(math.Ceil(float64(col*row) / 50.0))
+		imageBase64           string
+		wg                    sync.WaitGroup
+	)
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("letterboxd.com"),
@@ -64,7 +74,7 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 	)
 
 	c.OnHTML(".table.film-table", func(e *colly.HTMLElement) {
-		e.ForEachWithBreak("tr.diary-entry-row", func(i int, el *colly.HTMLElement) bool {
+		e.ForEachWithBreak("tr.diary-entry-row", func(_ int, el *colly.HTMLElement) bool {
 			title := el.ChildText("h3.headline-3.prettify")
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
@@ -82,14 +92,18 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 			}
 
 			films = append(films, &Film{Title: title, Link: link, Rating: rating, Rewatch: rewatch, Like: like})
-			return !(i+1 == col*row)
+			entryCount += 1
+
+			return !(entryCount == col*row)
 		})
+		wg.Done()
 	})
 
-	c.Visit("https://letterboxd.com/" + username + "/films/diary/")
-
-	var image, year, director string
-	var directors []string
+	for i := 1; i <= page; i++ {
+		wg.Add(1)
+		c.Visit("https://letterboxd.com/" + username + "/films/diary/page/" + fmt.Sprintf("%d", i))
+	}
+	wg.Wait()
 
 	c.OnHTML(".text-link.text-footer", func(e *colly.HTMLElement) {
 		siteLinks := e.ChildAttrs("a", "href")
@@ -97,6 +111,10 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 		if len(siteLinks) > 2 {
 			tmdbURLSplit = strings.Split(siteLinks[1], "/")
 		} else {
+			if siteLinks[0] == "" {
+				image = "https://image.tmdb.org/t/p/w500"
+				return
+			}
 			tmdbURLSplit = strings.Split(siteLinks[0], "/")
 		}
 		tmdbID := tmdbURLSplit[len(tmdbURLSplit)-2]
@@ -130,7 +148,7 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 					director += dir + ", "
 				}
 			}
-		} else {
+		} else if len(directors) == 1 {
 			director = directors[0]
 		}
 	})
@@ -153,5 +171,7 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 		filmImages = append(filmImages, imageBase64)
 	}
 
-	return MakeGrid(filmImages, col, row)
+	imageBase64 = MakeGrid(filmImages, col, row)
+
+	return imageBase64
 }
