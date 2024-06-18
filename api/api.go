@@ -77,7 +77,6 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if col == 0 && row == 0 {
-		fmt.Println(timeRange)
 		imageBase64 = lib.GetLastBoxdTime(username, timeRange, qTitle, qDirector, qRating)
 	} else {
 		imageBase64 = lib.GetLastBoxd(username, col, row, qTitle, qDirector, qRating)

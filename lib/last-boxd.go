@@ -97,8 +97,6 @@ func GetLastBoxdTime(username string, dateLimit time.Time, qTitle, qDirector, qR
 				return false
 			}
 
-			fmt.Println(date)
-
 			title := el.ChildText("h3.headline-3.prettify")
 			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
@@ -204,7 +202,6 @@ func GetLastBoxdTime(username string, dateLimit time.Time, qTitle, qDirector, qR
 		row = col + 1
 	}
 
-	fmt.Println(col, row)
 	imageBase64 = MakeGrid(filmImages, col, row)
 
 	return imageBase64
