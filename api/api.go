@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sngbd/last-boxd-server/lib"
@@ -15,15 +16,22 @@ type Response struct {
 }
 
 func LastBoxd(w http.ResponseWriter, r *http.Request) {
+	var (
+		col         int    = 3
+		row         int    = 3
+		qTitle      string = "on"
+		qDirector   string = "on"
+		qRating     string = "on"
+		timeInt     int
+		timeRange   time.Time
+		imageBase64 string
+		err         error
+	)
+
+	log.Printf("%s", r.URL.String())
+
 	vars := mux.Vars(r)
 	q := r.URL.Query()
-
-	var col int = 3
-	var row int = 3
-	var qTitle string = "on"
-	var qDirector string = "on"
-	var qRating string = "on"
-	var err error
 
 	username := vars["username"]
 	qCol := q.Get("col")
@@ -46,7 +54,32 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	imageBase64 := lib.GetLastBoxd(username, col, row, qTitle, qDirector, qRating)
+	if qRow == "" && qCol == "" {
+		col, row = 0, 0
+		timeInt, err = strconv.Atoi(q.Get("time"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		loc, _ := time.LoadLocation(time.UTC.String())
+		currentTime := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, loc)
+		switch timeInt {
+		case 1:
+			timeRange = currentTime.AddDate(0, 0, -7)
+		case 2:
+			timeRange = currentTime.AddDate(0, -1, 0)
+		case 3:
+			timeRange = currentTime.AddDate(0, -3, 0)
+		case 4:
+			timeRange = currentTime.AddDate(-1, 0, 0)
+		}
+	}
+
+	if col == 0 && row == 0 {
+		imageBase64 = lib.GetLastBoxdTime(username, timeRange, qTitle, qDirector, qRating)
+	} else {
+		imageBase64 = lib.GetLastBoxd(username, col, row, qTitle, qDirector, qRating)
+	}
 
 	data := Response{ImageBase64: imageBase64}
 
