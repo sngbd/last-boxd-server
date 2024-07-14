@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -33,7 +34,7 @@ func LastBoxd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	q := r.URL.Query()
 
-	username := vars["username"]
+	username := strings.TrimSpace(vars["username"])
 	qCol := q.Get("col")
 	qRow := q.Get("row")
 	qTitle = q.Get("title")
