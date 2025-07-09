@@ -97,8 +97,8 @@ func GetLastBoxdTime(username string, dateLimit time.Time, qTitle, qDirector, qR
 				return false
 			}
 
-			title := el.ChildText("h3.headline-3.prettify")
-			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
+			title := el.ChildText(".-primary")
+			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr(".-primary > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
 			rewatch := false
 			like := false
@@ -226,8 +226,8 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 
 	c.OnHTML(".table.film-table", func(e *colly.HTMLElement) {
 		e.ForEachWithBreak("tr.diary-entry-row", func(_ int, el *colly.HTMLElement) bool {
-			title := el.ChildText("h3.headline-3.prettify")
-			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr("h3.headline-3.prettify > a", "href"), "/")[2:4], "/")
+			title := el.ChildText(".-primary")
+			link := "https://letterboxd.com/" + strings.Join(strings.Split(el.ChildAttr(".-primary > a", "href"), "/")[2:4], "/")
 			rating := el.ChildText("span.rating")
 			rewatch := false
 			like := false
@@ -285,8 +285,8 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 		image = "https://image.tmdb.org/t/p/w500" + tmdb.Poster
 	})
 
-	c.OnHTML("div.metablock", func(e *colly.HTMLElement) {
-		year = e.ChildText("div.releaseyear > a")
+	c.OnHTML(".productioninfo", func(e *colly.HTMLElement) {
+		year = e.ChildText(".releasedate > a")
 		e.ForEach("span.prettify", func(_ int, elem *colly.HTMLElement) {
 			dir := elem.Text
 			directors = append(directors, dir)
