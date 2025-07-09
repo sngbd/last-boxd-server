@@ -98,10 +98,8 @@ func GetLastBoxdTime(username string, dateLimit time.Time, qTitle, qDirector, qR
 			}
 
 			title := el.ChildText(".-primary")
-			href := el.ChildAttr(".-primary > a", "href")
-			log.Println("Href:", href)
-			splitHref := strings.Split(href, "/")
-			link := "https://letterboxd.com/" + strings.Join(splitHref[2:4], "/")
+			link := el.ChildAttr(".-primary > a", "href")
+			log.Println("Href:", link)
 			rating := el.ChildText("span.rating")
 			rewatch := false
 			like := false
@@ -230,10 +228,8 @@ func GetLastBoxd(username string, col, row int, qTitle, qDirector, qRating strin
 	c.OnHTML(".table.film-table", func(e *colly.HTMLElement) {
 		e.ForEachWithBreak("tr.diary-entry-row", func(_ int, el *colly.HTMLElement) bool {
 			title := el.ChildText(".-primary")
-			href := el.ChildAttr(".-primary > a", "href")
-			log.Println("Href:", href)
-			splitHref := strings.Split(href, "/")
-			link := "https://letterboxd.com/" + strings.Join(splitHref[2:4], "/")
+			link := el.ChildAttr(".-primary > a", "href")
+			log.Println("Href:", link)
 			rating := el.ChildText("span.rating")
 			rewatch := false
 			like := false
